@@ -1,0 +1,922 @@
+"<!DOCTYPE html>
+<html lang=\"en\">
+<head>
+    <meta charset=\"UTF-8\">
+    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+    <title>AffiliateHub - Premium Affiliate Marketing</title>
+    <script src=\"https://cdn.tailwindcss.com\"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", \"Roboto\", \"Oxygen\", \"Ubuntu\", \"Cantarell\", \"Fira Sans\", \"Droid Sans\", \"Helvetica Neue\", sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .gradient-text {
+            background: linear-gradient(to right, #22d3ee, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(to br, #0a0a0f, #111827, #0a0a0f);
+        }
+
+        .gradient-button {
+            background: linear-gradient(to right, #06b6d4, #2563eb);
+            transition: all 0.3s ease;
+        }
+
+        .gradient-button:hover {
+            background: linear-gradient(to right, #0891b2, #1d4ed8);
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.4);
+        }
+
+        .card {
+            background: rgba(31, 41, 55, 0.4);
+            border: 1px solid #374151;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+            border-color: rgba(6, 182, 212, 0.5);
+            box-shadow: 0 20px 40px rgba(6, 182, 212, 0.2);
+        }
+
+        .product-card img {
+            transition: transform 0.5s ease;
+        }
+
+        .product-card:hover img {
+            transform: scale(1.1);
+        }
+
+        .fab {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(to right, #06b6d4, #2563eb);
+            box-shadow: 0 10px 40px rgba(6, 182, 212, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 50px rgba(6, 182, 212, 0.7);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            width: 90%;
+        }
+
+        .toast {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            background: #1f2937;
+            border: 1px solid #22d3ee;
+            border-radius: 0.5rem;
+            padding: 1rem 1.5rem;
+            color: white;
+            z-index: 3000;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .category-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .category-card.active {
+            background: linear-gradient(to br, #06b6d4, #2563eb);
+            box-shadow: 0 10px 30px rgba(6, 182, 212, 0.25);
+        }
+
+        input, textarea, select {
+            background: #111827;
+            border: 1px solid #374151;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            width: 100%;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #06b6d4;
+        }
+
+        button {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, #06b6d4, #2563eb);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(to right, #0891b2, #1d4ed8);
+            transform: scale(1.05);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #374151;
+            color: #9ca3af;
+        }
+
+        .btn-outline:hover {
+            background: #1f2937;
+        }
+    </style>
+</head>
+<body class=\"gradient-bg min-h-screen\">
+    <!-- Toast Notification -->
+    <div id=\"toast\" class=\"toast\"></div>
+
+    <!-- Main App Container -->
+    <div id=\"app\"></div>
+
+    <script>
+        // Mock Data
+        const categories = [
+            { id: 'fitness', name: 'Fitness', icon: '🏋️' },
+            { id: 'tech', name: 'Tech', icon: '💻' },
+            { id: 'fashion', name: 'Fashion', icon: '👔' },
+            { id: 'lifestyle', name: 'Lifestyle', icon: '✨' }
+        ];
+
+        const productsData = [
+            {
+                id: 1,
+                title: 'Premium Yoga Mat Pro',
+                category: 'fitness',
+                price: 49.99,
+                originalPrice: 79.99,
+                commission: '15%',
+                rating: 4.8,
+                reviews: 2847,
+                description: 'Non-slip, eco-friendly yoga mat with extra cushioning. Perfect for all yoga styles.',
+                image: 'https://images.unsplash.com/photo-1601925260368-ae2f83cf8b7f?w=400',
+                affiliateLink: '#',
+                featured: true
+            },
+            {
+                id: 2,
+                title: 'Smart Fitness Tracker Pro',
+                category: 'fitness',
+                price: 129.99,
+                originalPrice: 199.99,
+                commission: '20%',
+                rating: 4.9,
+                reviews: 5234,
+                description: 'Track your workouts, heart rate, sleep, and more with advanced AI insights.',
+                image: 'https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?w=400',
+                affiliateLink: '#',
+                featured: true
+            },
+            {
+                id: 3,
+                title: 'Adjustable Dumbbell Set',
+                category: 'fitness',
+                price: 299.99,
+                originalPrice: 449.99,
+                commission: '18%',
+                rating: 4.7,
+                reviews: 1823,
+                description: 'Space-saving adjustable dumbbells with quick weight change mechanism.',
+                image: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400',
+                affiliateLink: '#',
+                featured: false
+            },
+            {
+                id: 4,
+                title: 'Wireless Noise Cancelling Headphones',
+                category: 'tech',
+                price: 279.99,
+                originalPrice: 349.99,
+                commission: '12%',
+                rating: 4.9,
+                reviews: 8932,
+                description: 'Premium sound quality with active noise cancellation and 30-hour battery life.',
+                image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400',
+                affiliateLink: '#',
+                featured: true
+            },
+            {
+                id: 5,
+                title: '4K Webcam Pro',
+                category: 'tech',
+                price: 149.99,
+                originalPrice: 199.99,
+                commission: '15%',
+                rating: 4.6,
+                reviews: 3421,
+                description: 'Crystal clear 4K video with AI-powered auto-focus and lighting adjustment.',
+                image: 'https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=400',
+                affiliateLink: '#',
+                featured: false
+            },
+            {
+                id: 6,
+                title: 'Mechanical Gaming Keyboard',
+                category: 'tech',
+                price: 159.99,
+                originalPrice: 229.99,
+                commission: '18%',
+                rating: 4.8,
+                reviews: 4567,
+                description: 'RGB backlit mechanical keyboard with programmable keys and premium switches.',
+                image: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=400',
+                affiliateLink: '#',
+                featured: true
+            },
+            {
+                id: 7,
+                title: 'Premium Leather Jacket',
+                category: 'fashion',
+                price: 199.99,
+                originalPrice: 349.99,
+                commission: '20%',
+                rating: 4.7,
+                reviews: 1234,
+                description: 'Genuine leather jacket with modern fit and timeless style.',
+                image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=400',
+                affiliateLink: '#',
+                featured: true
+            },
+            {
+                id: 8,
+                title: 'Designer Sunglasses Collection',
+                category: 'fashion',
+                price: 89.99,
+                originalPrice: 149.99,
+                commission: '25%',
+                rating: 4.9,
+                reviews: 2891,
+                description: 'UV protection with polarized lenses and elegant design.',
+                image: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400',
+                affiliateLink: '#',
+                featured: false
+            },
+            {
+                id: 9,
+                title: 'Luxury Watch Set',
+                category: 'fashion',
+                price: 399.99,
+                originalPrice: 699.99,
+                commission: '22%',
+                rating: 4.8,
+                reviews: 892,
+                description: 'Swiss-inspired timepiece with sapphire crystal and automatic movement.',
+                image: 'https://images.unsplash.com/photo-1523170335258-f5ed11844a49?w=400',
+                affiliateLink: '#',
+                featured: true
+            },
+            {
+                id: 10,
+                title: 'Smart Home Coffee Maker',
+                category: 'lifestyle',
+                price: 179.99,
+                originalPrice: 249.99,
+                commission: '16%',
+                rating: 4.7,
+                reviews: 3456,
+                description: 'WiFi-enabled coffee maker with app control and customizable brew settings.',
+                image: 'https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?w=400',
+                affiliateLink: '#',
+                featured: false
+            },
+            {
+                id: 11,
+                title: 'Aromatherapy Diffuser Deluxe',
+                category: 'lifestyle',
+                price: 59.99,
+                originalPrice: 89.99,
+                commission: '30%',
+                rating: 4.9,
+                reviews: 5678,
+                description: 'Ultrasonic essential oil diffuser with LED lights and timer settings.',
+                image: 'https://images.unsplash.com/photo-1585159812596-fac104f2f069?w=400',
+                affiliateLink: '#',
+                featured: true
+            },
+            {
+                id: 12,
+                title: 'Premium Travel Backpack',
+                category: 'lifestyle',
+                price: 119.99,
+                originalPrice: 179.99,
+                commission: '20%',
+                rating: 4.8,
+                reviews: 2134,
+                description: 'Water-resistant travel backpack with laptop compartment and USB charging port.',
+                image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400',
+                affiliateLink: '#',
+                featured: true
+            }
+        ];
+
+        // State Management
+        let currentView = 'home';
+        let isAdmin = localStorage.getItem('adminToken') === 'mock-token-123';
+        let selectedCategory = 'all';
+        let products = [...productsData];
+
+        // Helper Functions
+        function showToast(title, description) {
+            const toast = document.getElementById('toast');
+            toast.innerHTML = `<strong>${title}</strong><br/>${description}`;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+
+        function showModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function hideModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        // Render Functions
+        function renderHome() {
+            const filteredProducts = selectedCategory === 'all' 
+                ? products 
+                : products.filter(p => p.category === selectedCategory);
+
+            const featuredProducts = products.filter(p => p.featured);
+
+            return `
+                <!-- Header -->
+                <header class=\"border-b border-gray-800 bg-gray-900/50 backdrop-blur-lg sticky top-0 z-50\">
+                    <div class=\"container mx-auto px-4 py-4\">
+                        <div class=\"flex items-center justify-between\">
+                            <div class=\"flex items-center gap-2\">
+                                <span class=\"text-4xl\">📈</span>
+                                <span class=\"text-2xl font-bold gradient-text\">AffiliateHub</span>
+                            </div>
+                            <div class=\"flex gap-2\">
+                                ${isAdmin 
+                                    ? '<button onclick=\"navigateTo('dashboard')\" class=\"btn-outline px-4 py-2\">⚙️ Dashboard</button>'
+                                    : '<button onclick=\"navigateTo('login')\" class=\"btn-outline px-4 py-2\">Admin Login</button>'
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Hero Section -->
+                <section class=\"container mx-auto px-4 py-20\">
+                    <div class=\"text-center\">
+                        <div class=\"inline-block mb-4 px-4 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-400/30 rounded-full text-sm\">
+                            Discover Premium Deals
+                        </div>
+                        <h1 class=\"text-5xl md:text-7xl font-bold mb-6 gradient-text\">
+                            Top Picks in Fitness,<br/>Tech & Lifestyle
+                        </h1>
+                        <p class=\"text-xl text-gray-400 mb-8 max-w-2xl mx-auto\">
+                            Curated selection of the best products with exclusive deals and commissions.
+                            Start earning while sharing products you love.
+                        </p>
+                        <div class=\"flex gap-4 justify-center flex-wrap\">
+                            <button class=\"gradient-button px-6 py-3 text-white font-semibold rounded-lg\">
+                                Explore Products →
+                            </button>
+                            <button class=\"btn-outline px-6 py-3\">
+                                View Stats
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class=\"grid grid-cols-2 md:grid-cols-4 gap-4 mt-16\">
+                        ${[
+                            { label: 'Active Products', value: '500+' },
+                            { label: 'Partner Brands', value: '150+' },
+                            { label: 'Monthly Clicks', value: '50K+' },
+                            { label: 'Avg Commission', value: '18%' }
+                        ].map(stat => `
+                            <div class=\"card p-6 text-center\">
+                                <div class=\"text-3xl font-bold text-cyan-400 mb-2\">${stat.value}</div>
+                                <div class=\"text-sm text-gray-400\">${stat.label}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </section>
+
+                <!-- Categories -->
+                <section class=\"container mx-auto px-4 py-12\">
+                    <div class=\"flex items-center gap-2 mb-8\">
+                        <span class=\"text-2xl\">🔍</span>
+                        <h2 class=\"text-2xl font-bold text-white\">Browse by Category</h2>
+                    </div>
+                    <div class=\"grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4\">
+                        <div class=\"category-card card p-6 text-center ${selectedCategory === 'all' ? 'active' : ''}\" 
+                             onclick=\"filterCategory('all')\">
+                            <div class=\"text-4xl mb-3\">🛒</div>
+                            <h3 class=\"font-semibold text-white\">All Products</h3>
+                            <p class=\"text-sm mt-1 text-gray-400\">${products.length} items</p>
+                        </div>
+                        ${categories.map(cat => `
+                            <div class=\"category-card card p-6 text-center ${selectedCategory === cat.id ? 'active' : ''}\" 
+                                 onclick=\"filterCategory('${cat.id}')\">
+                                <div class=\"text-4xl mb-3\">${cat.icon}</div>
+                                <h3 class=\"font-semibold text-white\">${cat.name}</h3>
+                                <p class=\"text-sm mt-1 text-gray-400\">${products.filter(p => p.category === cat.id).length} items</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </section>
+
+                <!-- Featured Products -->
+                ${selectedCategory === 'all' ? `
+                <section class=\"container mx-auto px-4 py-12\">
+                    <h2 class=\"text-3xl font-bold text-white mb-8 flex items-center gap-2\">
+                        ⭐ Featured Deals
+                    </h2>
+                    <div class=\"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6\">
+                        ${featuredProducts.map(product => renderProductCard(product)).join('')}
+                    </div>
+                </section>
+                ` : ''}
+
+                <!-- Products -->
+                <section class=\"container mx-auto px-4 py-12\">
+                    ${selectedCategory === 'all' ? `
+                        ${categories.map(cat => {
+                            const categoryProducts = products.filter(p => p.category === cat.id);
+                            return `
+                                <div class=\"mb-16\">
+                                    <div class=\"flex items-center gap-3 mb-8\">
+                                        <span class=\"text-4xl\">${cat.icon}</span>
+                                        <h2 class=\"text-3xl font-bold text-white\">${cat.name}</h2>
+                                        <span class=\"px-3 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-400/30 rounded-full text-sm\">
+                                            ${categoryProducts.length} Products
+                                        </span>
+                                    </div>
+                                    <div class=\"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6\">
+                                        ${categoryProducts.map(product => renderProductCard(product)).join('')}
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    ` : `
+                        <div>
+                            <div class=\"flex items-center gap-3 mb-8\">
+                                <span class=\"text-4xl\">${categories.find(c => c.id === selectedCategory)?.icon}</span>
+                                <h2 class=\"text-3xl font-bold text-white\">${categories.find(c => c.id === selectedCategory)?.name} Products</h2>
+                                <span class=\"px-3 py-1 bg-cyan-500/10 text-cyan-400 border border-cyan-400/30 rounded-full text-sm\">
+                                    ${filteredProducts.length} Products
+                                </span>
+                            </div>
+                            <div class=\"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6\">
+                                ${filteredProducts.map(product => renderProductCard(product)).join('')}
+                            </div>
+                        </div>
+                    `}
+                </section>
+
+                <!-- Footer -->
+                <footer class=\"border-t border-gray-800 bg-gray-900/50 mt-20\">
+                    <div class=\"container mx-auto px-4 py-8 text-center text-gray-400\">
+                        <p>© 2024 AffiliateHub. All rights reserved.</p>
+                        <p class=\"text-sm mt-2\">Earn commissions on every sale you drive</p>
+                    </div>
+                </footer>
+
+                <!-- FAB Button -->
+                ${isAdmin ? `
+                    <button class=\"fab\" onclick=\"showModal('addProductModal')\" title=\"Quick Add Product\">
+                        <svg width=\"24\" height=\"24\" fill=\"none\" stroke=\"white\" stroke-width=\"2\" viewBox=\"0 0 24 24\">
+                            <path d=\"M12 5v14M5 12h14\"/>
+                        </svg>
+                    </button>
+                ` : ''}
+            `;
+        }
+
+        function renderProductCard(product) {
+            const discount = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
+            return `
+                <div class=\"card product-card overflow-hidden\">
+                    <div class=\"relative overflow-hidden\">
+                        <img src=\"${product.image}\" alt=\"${product.title}\" class=\"w-full h-48 object-cover\"/>
+                        ${discount > 0 ? `
+                            <span class=\"absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-sm font-bold\">
+                                -${discount}%
+                            </span>
+                        ` : ''}
+                        ${product.featured ? `
+                            <span class=\"absolute top-2 left-2 bg-yellow-500 text-black px-2 py-1 rounded text-sm font-bold\">
+                                ⭐ Featured
+                            </span>
+                        ` : ''}
+                    </div>
+                    <div class=\"p-4\">
+                        <h3 class=\"text-white font-semibold text-lg mb-2\">${product.title}</h3>
+                        <p class=\"text-gray-400 text-sm mb-3 line-clamp-2\">${product.description}</p>
+                        <div class=\"flex items-center gap-2 mb-3\">
+                            <span class=\"text-yellow-400\">⭐</span>
+                            <span class=\"text-white font-semibold\">${product.rating}</span>
+                            <span class=\"text-gray-400 text-sm\">(${product.reviews} reviews)</span>
+                        </div>
+                        <div class=\"flex items-center gap-3 mb-3\">
+                            <span class=\"text-2xl font-bold text-cyan-400\">$${product.price}</span>
+                            ${product.originalPrice ? `
+                                <span class=\"text-gray-500 line-through\">$${product.originalPrice}</span>
+                            ` : ''}
+                        </div>
+                        <span class=\"inline-block px-3 py-1 bg-green-500/10 text-green-400 border border-green-400/30 rounded-full text-sm mb-4\">
+                            ${product.commission} Commission
+                        </span>
+                        <div class=\"flex gap-2\">
+                            <button class=\"gradient-button flex-1 text-white py-2 px-4 rounded font-semibold\" 
+                                    onclick=\"window.open('${product.affiliateLink}', '_blank')\">
+                                🛒 Get Deal
+                            </button>
+                            <button class=\"btn-outline p-2\" onclick=\"window.open('${product.affiliateLink}', '_blank')\">
+                                🔗
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderLogin() {
+            return `
+                <div class=\"min-h-screen flex items-center justify-center p-4\">
+                    <div class=\"w-full max-w-md\">
+                        <div class=\"text-center mb-8\">
+                            <div class=\"flex items-center justify-center gap-2 mb-4\">
+                                <span class=\"text-6xl\">📈</span>
+                            </div>
+                            <h1 class=\"text-3xl font-bold gradient-text\">AffiliateHub Admin</h1>
+                            <p class=\"text-gray-400 mt-2\">Sign in to manage your products</p>
+                        </div>
+
+                        <div class=\"card p-8\">
+                            <h2 class=\"text-white text-2xl mb-2 flex items-center gap-2\">
+                                🔒 Admin Login
+                            </h2>
+                            <p class=\"text-gray-400 mb-6\">Enter your credentials to access the dashboard</p>
+                            
+                            <form onsubmit=\"handleLogin(event)\" class=\"space-y-4\">
+                                <div>
+                                    <label class=\"block text-gray-300 mb-2\">Email</label>
+                                    <input type=\"email\" id=\"loginEmail\" placeholder=\"admin@affiliatesite.com\" required />
+                                </div>
+                                <div>
+                                    <label class=\"block text-gray-300 mb-2\">Password</label>
+                                    <input type=\"password\" id=\"loginPassword\" placeholder=\"Enter your password\" required />
+                                </div>
+                                <div class=\"p-3 bg-gray-900/50 rounded border border-gray-700 text-sm text-gray-400\">
+                                    <p class=\"font-semibold text-cyan-400 mb-1\">Demo Credentials:</p>
+                                    <p>Email: admin@affiliatesite.com</p>
+                                    <p>Password: admin123</p>
+                                </div>
+                                <button type=\"submit\" class=\"btn-primary w-full py-3 font-semibold\">
+                                    Sign In
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class=\"text-center mt-6\">
+                            <button onclick=\"navigateTo('home')\" class=\"text-cyan-400 hover:text-cyan-300\">
+                                Back to Home
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderDashboard() {
+            return `
+                <!-- Header -->
+                <header class=\"border-b border-gray-800 bg-gray-900/50 backdrop-blur-lg sticky top-0 z-50\">
+                    <div class=\"container mx-auto px-4 py-4\">
+                        <div class=\"flex items-center justify-between\">
+                            <div class=\"flex items-center gap-2\">
+                                <span class=\"text-4xl\">📈</span>
+                                <span class=\"text-2xl font-bold gradient-text\">AffiliateHub Admin</span>
+                            </div>
+                            <div class=\"flex gap-2\">
+                                <button onclick=\"navigateTo('home')\" class=\"btn-outline px-4 py-2\">View Site</button>
+                                <button onclick=\"handleLogout()\" class=\"btn-outline px-4 py-2 text-red-400 border-red-500/30\">
+                                    🚪 Logout
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <div class=\"container mx-auto px-4 py-8\">
+                    <!-- Dashboard Stats -->
+                    <div class=\"grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8\">
+                        ${[
+                            { label: 'Total Products', value: products.length, icon: '📦', color: 'cyan' },
+                            { label: 'Featured', value: products.filter(p => p.featured).length, icon: '⭐', color: 'yellow' },
+                            { label: 'Avg Commission', value: '18%', icon: '💰', color: 'green' },
+                            { label: 'Total Clicks', value: '12.5K', icon: '👆', color: 'blue' }
+                        ].map(stat => `
+                            <div class=\"card p-6\">
+                                <div class=\"flex items-center justify-between\">
+                                    <div>
+                                        <p class=\"text-gray-400 text-sm mb-1\">${stat.label}</p>
+                                        <p class=\"text-3xl font-bold text-${stat.color}-400\">${stat.value}</p>
+                                    </div>
+                                    <span class=\"text-4xl opacity-50\">${stat.icon}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <!-- Products Management -->
+                    <div class=\"card p-6\">
+                        <div class=\"flex items-center justify-between mb-6\">
+                            <div>
+                                <h2 class=\"text-white text-2xl font-bold\">Manage Products</h2>
+                                <p class=\"text-gray-400\">Add, edit, or remove affiliate products</p>
+                            </div>
+                            <button onclick=\"showModal('addProductModal')\" class=\"btn-primary px-4 py-2\">
+                                ➕ Add Product
+                            </button>
+                        </div>
+
+                        <div class=\"space-y-4\">
+                            ${products.map((product, index) => `
+                                <div class=\"flex items-center gap-4 p-4 bg-gray-900/50 rounded-lg border border-gray-700 hover:border-cyan-500/50 transition-all\">
+                                    <img src=\"${product.image}\" alt=\"${product.title}\" class=\"w-20 h-20 object-cover rounded\"/>
+                                    <div class=\"flex-1\">
+                                        <div class=\"flex items-center gap-2 mb-1\">
+                                            <h3 class=\"text-white font-semibold\">${product.title}</h3>
+                                            ${product.featured ? '<span class=\"px-2 py-1 bg-yellow-500 text-black rounded text-xs font-bold\">⭐ Featured</span>' : ''}
+                                        </div>
+                                        <p class=\"text-gray-400 text-sm mb-2\">${product.category}</p>
+                                        <div class=\"flex items-center gap-4 text-sm\">
+                                            <span class=\"text-cyan-400 font-semibold\">$${product.price}</span>
+                                            <span class=\"text-gray-500 line-through\">$${product.originalPrice}</span>
+                                            <span class=\"px-2 py-1 bg-green-500/10 text-green-400 border border-green-400/30 rounded text-xs\">
+                                                ${product.commission}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class=\"flex gap-2\">
+                                        <button onclick=\"editProduct(${index})\" class=\"btn-outline px-3 py-2 text-cyan-400 border-cyan-500/30\">
+                                            ✏️
+                                        </button>
+                                        <button onclick=\"deleteProduct(${index})\" class=\"btn-outline px-3 py-2 text-red-400 border-red-500/30\">
+                                            🗑️
+                                        </button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Add Product Modal
+        function renderAddProductModal() {
+            return `
+                <div id=\"addProductModal\" class=\"modal\">
+                    <div class=\"modal-content\">
+                        <div class=\"flex items-center justify-between mb-4\">
+                            <div>
+                                <h2 class=\"text-white text-2xl font-bold\">Quick Add Product</h2>
+                                <p class=\"text-gray-400 text-sm\">Add a new affiliate product to your catalog</p>
+                            </div>
+                            <button onclick=\"hideModal('addProductModal')\" class=\"text-gray-400 hover:text-white text-2xl\">✕</button>
+                        </div>
+                        
+                        <form onsubmit=\"handleAddProduct(event)\" class=\"space-y-4\">
+                            <div>
+                                <label class=\"block text-gray-300 mb-2\">Product Title *</label>
+                                <input type=\"text\" id=\"productTitle\" placeholder=\"Enter product name\" required />
+                            </div>
+                            <div class=\"grid grid-cols-2 gap-4\">
+                                <div>
+                                    <label class=\"block text-gray-300 mb-2\">Category *</label>
+                                    <select id=\"productCategory\" required>
+                                        ${categories.map(cat => `<option value=\"${cat.id}\">${cat.name}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class=\"block text-gray-300 mb-2\">Commission *</label>
+                                    <input type=\"text\" id=\"productCommission\" placeholder=\"e.g., 20%\" required />
+                                </div>
+                            </div>
+                            <div class=\"grid grid-cols-2 gap-4\">
+                                <div>
+                                    <label class=\"block text-gray-300 mb-2\">Price ($) *</label>
+                                    <input type=\"number\" step=\"0.01\" id=\"productPrice\" placeholder=\"49.99\" required />
+                                </div>
+                                <div>
+                                    <label class=\"block text-gray-300 mb-2\">Original Price ($)</label>
+                                    <input type=\"number\" step=\"0.01\" id=\"productOriginalPrice\" placeholder=\"79.99\" />
+                                </div>
+                            </div>
+                            <div class=\"grid grid-cols-2 gap-4\">
+                                <div>
+                                    <label class=\"block text-gray-300 mb-2\">Rating (1-5)</label>
+                                    <input type=\"number\" step=\"0.1\" min=\"1\" max=\"5\" id=\"productRating\" placeholder=\"4.5\" />
+                                </div>
+                                <div>
+                                    <label class=\"block text-gray-300 mb-2\">Reviews Count</label>
+                                    <input type=\"number\" id=\"productReviews\" placeholder=\"1000\" />
+                                </div>
+                            </div>
+                            <div>
+                                <label class=\"block text-gray-300 mb-2\">Description *</label>
+                                <textarea id=\"productDescription\" rows=\"3\" placeholder=\"Enter product description\" required></textarea>
+                            </div>
+                            <div>
+                                <label class=\"block text-gray-300 mb-2\">Image URL *</label>
+                                <input type=\"url\" id=\"productImage\" placeholder=\"https://example.com/image.jpg\" required />
+                            </div>
+                            <div>
+                                <label class=\"block text-gray-300 mb-2\">Affiliate Link *</label>
+                                <input type=\"url\" id=\"productAffiliateLink\" placeholder=\"https://affiliate-link.com\" required />
+                            </div>
+                            <div class=\"flex items-center gap-2\">
+                                <input type=\"checkbox\" id=\"productFeatured\" class=\"w-4 h-4\" />
+                                <label for=\"productFeatured\" class=\"text-gray-300\">Mark as Featured Product</label>
+                            </div>
+                            <div class=\"flex gap-2 pt-4\">
+                                <button type=\"button\" onclick=\"hideModal('addProductModal')\" class=\"btn-outline flex-1 py-2\">
+                                    Cancel
+                                </button>
+                                <button type=\"submit\" class=\"btn-primary flex-1 py-2\">
+                                    Add Product
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Event Handlers
+        function navigateTo(view) {
+            currentView = view;
+            render();
+        }
+
+        function filterCategory(category) {
+            selectedCategory = category;
+            render();
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (email === 'admin@affiliatesite.com' && password === 'admin123') {
+                localStorage.setItem('adminToken', 'mock-token-123');
+                isAdmin = true;
+                showToast('Login Successful', 'Welcome back, Admin!');
+                navigateTo('dashboard');
+            } else {
+                showToast('Login Failed', 'Invalid email or password');
+            }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('adminToken');
+            isAdmin = false;
+            showToast('Logged out', 'You have been successfully logged out');
+            navigateTo('home');
+        }
+
+        function handleAddProduct(event) {
+            event.preventDefault();
+            
+            const newProduct = {
+                id: products.length + 1,
+                title: document.getElementById('productTitle').value,
+                category: document.getElementById('productCategory').value,
+                price: parseFloat(document.getElementById('productPrice').value),
+                originalPrice: parseFloat(document.getElementById('productOriginalPrice').value) || 0,
+                commission: document.getElementById('productCommission').value,
+                rating: parseFloat(document.getElementById('productRating').value) || 4.5,
+                reviews: parseInt(document.getElementById('productReviews').value) || 100,
+                description: document.getElementById('productDescription').value,
+                image: document.getElementById('productImage').value,
+                affiliateLink: document.getElementById('productAffiliateLink').value,
+                featured: document.getElementById('productFeatured').checked
+            };
+
+            products.push(newProduct);
+            hideModal('addProductModal');
+            showToast('Product Added', `${newProduct.title} has been added successfully`);
+            render();
+        }
+
+        function editProduct(index) {
+            showToast('Edit Feature', 'Edit functionality will be implemented in production');
+        }
+
+        function deleteProduct(index) {
+            if (confirm('Are you sure you want to delete this product?')) {
+                const product = products[index];
+                products.splice(index, 1);
+                showToast('Product Deleted', `${product.title} has been removed`);
+                render();
+            }
+        }
+
+        // Main Render Function
+        function render() {
+            const app = document.getElementById('app');
+            let content = '';
+
+            switch (currentView) {
+                case 'home':
+                    content = renderHome();
+                    break;
+                case 'login':
+                    content = renderLogin();
+                    break;
+                case 'dashboard':
+                    content = renderDashboard();
+                    break;
+            }
+
+            app.innerHTML = content + renderAddProductModal();
+        }
+
+        // Initialize App
+        render();
+    </script>
+</body>
+</html>
+"
